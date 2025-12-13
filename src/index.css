@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: #f1f5f9; /* slate-100 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Page transition animation */
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+.fade-in-page { 
+    animation: fadeIn 0.5s ease-out forwards; 
+}
+
+/* Custom Form Input Focus Styles */
+.form-input:focus {
+    box-shadow: 0 0 0 2px rgb(99 102 241 / 50%);
+    border-color: rgb(79 70 229);
+}
+
+/* Accordion Styles (for Admin Dashboard) */
+.accordion-body {
+    transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+    overflow-x: hidden; 
+    overflow-y: auto; 
+    max-height: 0; 
+    padding: 0 1.5rem;
+}
+.accordion-body.open { 
+    max-height: 400px; 
+    padding-top: 1.5rem; 
+    padding-bottom: 1.5rem; 
+}
+.accordion-header.open svg { 
+    transform: rotate(90deg); 
+}
+
+/* Universal Navbar Styles */
+.nav-link.active {
+    color: #4338ca; /* indigo-700 */
+    font-weight: 600;
+    border-bottom: 2px solid #4f46e5; /* indigo-600 */
+}
+.mobile-nav-link.active {
+    background-color: #e0e7ff; /* indigo-100 */
+    color: #312e81; /* indigo-900 */
+    font-weight: 600;
+}
+.navbar-canvas {
+    background-color: #F8F7F4;
+    background-image:
+        linear-gradient(45deg, rgba(0,0,0,0.02) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.02) 75%),
+        linear-gradient(45deg, rgba(0,0,0,0.02) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.02) 75%);
+    background-size: 2px 2px;
+    background-position: 0 0, 1px 1px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid #EAE8E1;
+}
+
+/* Custom Select Arrow for index.html */
+.form-select-custom {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25em;
+    padding-right: 2.5rem;
+}
+
+/* Clinic Details Page Styles */
+#map { 
+    height: 300px; 
+    border-radius: 0.75rem; 
+    border: 1px solid #e2e8f0; 
+    z-index: 10; 
+}
+
+.star-rating-display .star { color: #d1d5db; }
+.star-rating-display .star.filled { color: #f59e0b; }
+.star-rating-input { 
+    display: flex; 
+    flex-direction: row-reverse; 
+    justify-content: flex-end; 
+}
+.star-rating-input input { display: none; }
+.star-rating-input label {
+    color: #d1d5db; /* gray-300 */
+    font-size: 2rem;
+    padding: 0 0.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.star-rating-input input:checked ~ label,
+.star-rating-input label:hover,
+.star-rating-input label:hover ~ label {
+    color: #f59e0b; /* amber-500 */
+}
