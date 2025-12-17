@@ -13,6 +13,16 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Make the entire website blank */
+body {
+    margin: 0;
+    padding: 0;
+    visibility: hidden;
+}
+
+#root {
+    display: none !important;
+}
 /* Page transition animation */
 @keyframes fadeIn { 
     from { opacity: 0; transform: translateY(10px); } 
