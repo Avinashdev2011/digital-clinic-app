@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig.js';
@@ -6,14 +6,14 @@ import CustomSelect from '../components/CustomSelect.jsx'; // Import the new com
 
 // Data for the popular searches section, derived from index.html
 const popularSearches = [
-    { name: 'Family Medicine', service: 'General Medicine', bgColor: 'bg-blue-100', textColor: 'text-blue-600', hoverBg: 'hover:bg-blue-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2a.3.3 0 0 0-.2.3V5a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v2.3a.3.3 0 1 0 .5 0V9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-2V2.3a.3.3 0 1 0-.5 0V5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 0-.5.5v2.3a.3.3 0 1 0 .5 0V8a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 1-.5-.5V2.3a.3.3 0 1 0-.5 0V5a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v2.3a.3.3 0 1 0 .5 0V9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-2V2.3a.3.3 0 1 0-.5 0v2.4a.5.5 0 0 1-.5.5h-1a.5.5 0 0 0-.5.5v2.3a.3.3 0 1 0 .5 0V8a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 1-.5-.5V2.3A.3.3 0 0 0 5 2a.3.3 0 0 0-.2.3V5a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v2.3a.3.3 0 1 0 .5 0V9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-2V2.3a.3.3 0 1 0-.5 0V5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 0-.5.5v2.3a.3.3 0 1 0 .5 0V8a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 1-.5-.5V2.3a.3.3 0 1 0-.5 0z"/><path d="M8 8v12a4 4 0 0 0 4 4h0a4 4 0 0 0 4-4V8"/></svg> },
+    { name: 'Family Medicine', service: 'General Medicine', bgColor: 'bg-blue-100', textColor: 'text-blue-600', hoverBg: 'hover:bg-blue-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2a.3.3 0 0 0-.2.3V5a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v2.3a.3.3 0 1 0 .5 0V9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-2V2.3a.3.3 0 1 0-.5 0V5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 0-.5.5v2.3a.3.3 0 1 0 .5 0V8a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 1-.5-.5V2.3a.3.3 0 1 0-.5 0V5a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v2.3a.3.3 0 1 0 .5 0V9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-2V2.3a.3.3 0 1 0-.5 0V5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 0-.5.5v2.3a.3.3 0 1 0 .5 0V8a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 1-.5-.5V2.3a.3.3 0 1 0-.5 0V5a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v2.3a.3.3 0 1 0 .5 0V9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-2V2.3a.3.3 0 1 0-.5 0V5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 0-.5.5v2.3a.3.3 0 1 0 .5 0V8a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 1-.5-.5V2.3a.3.3 0 1 0-.5 0z"/><path d="M8 8v12a4 4 0 0 0 4 4h0a4 4 0 0 0 4-4V8"/></svg> },
     { name: 'Cardiology', service: 'Cardiology', bgColor: 'bg-red-100', textColor: 'text-red-600', hoverBg: 'hover:bg-red-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.7-1 2.1 4.3 1.4-2.3h4.1"/></svg> },
     { name: 'Dentistry', service: 'Dental Care', bgColor: 'bg-sky-100', textColor: 'text-sky-600', hoverBg: 'hover:bg-sky-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.2 2c-1 .4-2 1-2.6 2.4-2 3.9-2 6.6-.4 8.1.8 1 1.6.3 2.2-.4.6-.8.2-2-.7-3.2-1-1-1.2-2.3-.8-3.2.4-.8 1.2-.8 2-.4.8.4 1.2 1.2 1.2 2.3 0 1.1-.3 2.2-1 3.2-1 1.3-1.4 2.4-.8 3.2.6.7 1.4 1 2.2.4 1.6-1.5 1.6-4.2-.4-8.1-.6-1.4-1.6-2-2.6-2.4-1-.4-2.1-.4-3.1 0z"/><path d="M5.4 13.8c-2.3 2.1-2.8 4.6-1.8 6.1 1 1.5 3 2 5.4 1 2.4-1 2.8-3.5 1.8-5.1-1-1.6-3-2-5.4-2z"/><path d="M18.6 13.8c2.3 2.1 2.8 4.6 1.8 6.1-1 1.5-3 2-5.4 1-2.4-1-2.8-3.5-1.8-5.1 1-1.6 3-2 5.4-2z"/></svg> },
     { name: 'Orthopedics', service: 'Orthopedics', bgColor: 'bg-indigo-100', textColor: 'text-indigo-600', hoverBg: 'hover:bg-indigo-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a1 1 0 0 1 1 1v2.536a2 2 0 0 0 2.28 1.992c.287-.04 1.233-.22 2.373-1.11a1 1 0 0 1 1.413.218l.22.366A12.002 12.002 0 0 1 12 22a12.002 12.002 0 0 1-7.286-15.004l.22-.366a1 1 0 0 1 1.414-.218c1.14 .89 2.086 1.07 2.373 1.11A2 2 0 0 0 11 5.536V3a1 1 0 0 1 1-1z"/></svg> },
     { name: 'Pediatrics', service: 'Pediatrics', bgColor: 'bg-emerald-100', textColor: 'text-emerald-600', hoverBg: 'hover:bg-emerald-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12.5a5 5 0 0 0-10 0"/><path d="M9 6.5a5 5 0 0 1 10 0"/><path d="M12.5 2a5 5 0 0 0 0 10"/><path d="M18.5 22a5 5 0 0 0 0-10"/><path d="M2 17.5a5 5 0 0 0 10 0"/></svg> },
     { name: 'Dermatology', service: 'Dermatology', bgColor: 'bg-pink-100', textColor: 'text-pink-600', hoverBg: 'hover:bg-pink-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg> },
     { name: 'Gastroenterology', service: 'Gastroenterology', bgColor: 'bg-orange-100', textColor: 'text-orange-600', hoverBg: 'hover:bg-orange-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 20a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M11 6h2"/><path d="M10 10v0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2v0"/></svg> },
-    { name: 'Neurology', service: 'Neurology', bgColor: 'bg-cyan-100', textColor: 'text-cyan-600', hoverBg: 'hover:bg-cyan-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4.5 4.5 0 0 0-4.5 4.5v0a4.5 4.5 0 0 0 1.8 3.5a1 1 0 0 1 .4 1.5a1 1 0 0 0 .5 1.5a4.5 4.5 0 0 1 4.6 0a1 1 0 0 0 .5-1.5a1 1 0 0 1 .4-1.5a4.5 4.5 0 0 0 1.8-3.5v0A4.5 4.5 0 0 0 12 2Z"/><path d="M12 13v1"/><path d="M14.5 10.5v0a1 1 0 0 0-1-1h-3a1 1 0 0 0-1 1v0"/><path d="M12 22a4.5 4.5 0 0 1-4.5-4.5v0a4.5 4.5 0 0 1 1.8-3.5a1 1 0 0 0 .4-1.5a1 1 0 0 1 .5-1.5a4.5 4.5 0 0 0 4.6 0a1 1 0 0 1 .5 1.5a1 1 0 0 0 .4 1.5a4.5 4.5 0 0 1 1.8 3.5v0A4.5 4.5 0 0 1 12 22Z"/><path d="M12 11v-1"/><path d="M9.5 13.5v0a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v0"/><path d="M11.5 3.5a1 1 0 0 0 0 2"/><path d="M12.5 3.5a1 1 0 0 1 0 2"/><path d="M11.5 20.5a1 1 0 0 0 0-2"/><path d="M12.5 20.5a1 1 0 0 1 0-2"/><path d="M16 8a1 1 0 0 0-2-2"/><path d="M8 8a1 1 0 0 1 2-2"/><path d="M16 16a1 1 0 0 0-2 2"/><path d="M8 16a1 1 0 0 1 2 2"/></svg> },
+    { name: 'Neurology', service: 'Neurology', bgColor: 'bg-cyan-100', textColor: 'text-cyan-600', hoverBg: 'hover:bg-cyan-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4.5 4.5 0 0 0-4.5 4.5v0a4.5 4.5 0 0 0 1.8 3.5a1 1 0 0 1 .4 1.5a1 1 0 0 0 .5 1.5a4.5 4.5 0 0 1 4.6 0a1 1 0 0 1 .5 1.5a1 1 0 0 0 .4 1.5a4.5 4.5 0 0 0 1.8-3.5v0A4.5 4.5 0 0 0 12 2Z"/><path d="M12 13v1"/><path d="M14.5 10.5v0a1 1 0 0 0-1-1h-3a1 1 0 0 0-1 1v0"/><path d="M12 22a4.5 4.5 0 0 1-4.5-4.5v0a4.5 4.5 0 0 1 1.8-3.5a1 1 0 0 0 .4-1.5a1 1 0 0 1 .5-1.5a4.5 4.5 0 0 0 4.6 0a1 1 0 0 1 .5 1.5a1 1 0 0 0 .4 1.5a4.5 4.5 0 0 1 1.8 3.5v0A4.5 4.5 0 0 1 12 22Z"/><path d="M12 11v-1"/><path d="M9.5 13.5v0a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v0"/><path d="M11.5 3.5a1 1 0 0 0 0 2"/><path d="M12.5 3.5a1 1 0 0 1 0 2"/><path d="M11.5 20.5a1 1 0 0 0 0-2"/><path d="M12.5 20.5a1 1 0 0 1 0-2"/><path d="M16 8a1 1 0 0 0-2-2"/><path d="M8 8a1 1 0 0 1 2-2"/><path d="M16 16a1 1 0 0 0-2 2"/><path d="M8 16a1 1 0 0 1 2 2"/></svg> },
     { name: 'Ophthalmology', service: 'Ophthalmology', bgColor: 'bg-gray-200', textColor: 'text-gray-600', hoverBg: 'hover:bg-gray-600', icon: <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> },
 ];
 
@@ -27,6 +27,11 @@ const Home = () => {
     const [selectedDept, setSelectedDept] = useState('');
     const [loading, setLoading] = useState(true);
     const [clinicsToShow, setClinicsToShow] = useState(CLINICS_PER_LOAD);
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef(null);
+    const [showMicPopup, setShowMicPopup] = useState(false);
+    const [micPopupMessage, setMicPopupMessage] = useState('');
+    const [interimTranscript, setInterimTranscript] = useState('');
 
     useEffect(() => {
         const fetchClinics = async () => {
@@ -48,6 +53,48 @@ const Home = () => {
             }
         };
         fetchClinics();
+        
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true; // Enable interim results
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                let finalTranscript = '';
+                let interim = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interim += transcript;
+                    }
+                }
+                
+                if (finalTranscript) {
+                    setSearchTerm(prev => prev + finalTranscript);
+                }
+                
+                setInterimTranscript(interim);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+                setIsListening(false);
+                setInterimTranscript('');
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+                setInterimTranscript('');
+            };
+
+            recognitionRef.current = recognition;
+        }
     }, []);
 
     useEffect(() => {
@@ -85,8 +132,47 @@ const Home = () => {
         return { average: (sum / ratings.length).toFixed(1), count: ratings.length };
     };
 
+    const toggleVoiceSearch = () => {
+        if (recognitionRef.current) {
+            if (isListening) {
+                recognitionRef.current.stop();
+                setIsListening(false);
+                setInterimTranscript('');
+            } else {
+                setSearchTerm(''); // Clear current search term
+                setInterimTranscript(''); // Clear interim transcript
+                
+                // Show popup notification
+                setMicPopupMessage('Allow microphone access when prompted by your browser');
+                setShowMicPopup(true);
+                
+                // Hide popup after 3 seconds
+                setTimeout(() => {
+                    setShowMicPopup(false);
+                }, 3000);
+                
+                recognitionRef.current.start();
+                setIsListening(true);
+            }
+        } else {
+            alert('Speech recognition is not supported in your browser. Please try Chrome or Edge.');
+        }
+    };
+
     return (
         <div className="fade-in-page">
+            {/* Microphone Access Popup */}
+            {showMicPopup && (
+                <div className="fixed top-4 right-4 bg-teal-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fadeIn">
+                    <div className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <span>{micPopupMessage}</span>
+                    </div>
+                </div>
+            )}
+            
             {/* Hero Section */}
             <div className="bg-white">
                 <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center">
@@ -127,7 +213,38 @@ const Home = () => {
                     
                     {/* Filters */}
                     <div className="mb-8 flex flex-col md:flex-row gap-4">
-                        <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by name, address, or service..." className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-shadow" />
+                        <div className="relative w-full">
+                            <input 
+                                type="text" 
+                                value={searchTerm} 
+                                onChange={e => setSearchTerm(e.target.value)} 
+                                placeholder="Search by name, address, or service..." 
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-shadow pl-10" 
+                            />
+                            <button 
+                                onClick={toggleVoiceSearch}
+                                className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${isListening ? 'text-red-500' : 'text-slate-400'} hover:text-teal-600`}
+                                aria-label={isListening ? "Stop voice search" : "Start voice search"}
+                            >
+                                {isListening ? (
+                                    // Stop microphone icon (filled red)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"></path>
+                                        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                                        <line x1="12" y1="19" x2="12" y2="22"></line>
+                                        <line x1="8" y1="22" x2="16" y2="22"></line>
+                                    </svg>
+                                ) : (
+                                    // Microphone icon
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                                        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                                        <line x1="12" y1="19" x2="12" y2="22"></line>
+                                        <line x1="8" y1="22" x2="16" y2="22"></line>
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
                         
                         <CustomSelect
                             options={departments}
