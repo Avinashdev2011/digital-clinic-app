@@ -58,7 +58,7 @@ const Home = () => {
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
-            recognition.continuous = false;
+            recognition.continuous = true; // Keep recognition continuous
             recognition.interimResults = true; // Enable interim results
             recognition.lang = 'en-US';
 
@@ -84,18 +84,27 @@ const Home = () => {
 
             recognition.onerror = (event) => {
                 console.error('Speech recognition error', event.error);
-                setIsListening(false);
-                setInterimTranscript('');
+                // Don't stop listening on error, just show message
+                setInterimTranscript('Error: ' + event.error);
             };
 
             recognition.onend = () => {
-                setIsListening(false);
-                setInterimTranscript('');
+                // Only stop listening if explicitly requested
+                if (isListening) {
+                    // Restart recognition if still supposed to be listening
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.log('Recognition restart failed:', e);
+                    }
+                } else {
+                    setInterimTranscript('');
+                }
             };
 
             recognitionRef.current = recognition;
         }
-    }, []);
+    }, [isListening]); // Add isListening as dependency
 
     useEffect(() => {
         const results = allClinics.filter(clinic => {
@@ -135,10 +144,12 @@ const Home = () => {
     const toggleVoiceSearch = () => {
         if (recognitionRef.current) {
             if (isListening) {
+                // Stop listening
                 recognitionRef.current.stop();
                 setIsListening(false);
                 setInterimTranscript('');
             } else {
+                // Start listening
                 setSearchTerm(''); // Clear current search term
                 setInterimTranscript(''); // Clear interim transcript
                 
@@ -151,8 +162,13 @@ const Home = () => {
                     setShowMicPopup(false);
                 }, 3000);
                 
-                recognitionRef.current.start();
-                setIsListening(true);
+                try {
+                    recognitionRef.current.start();
+                    setIsListening(true);
+                } catch (e) {
+                    console.error('Failed to start recognition:', e);
+                    alert('Failed to start voice recognition. Please try again.');
+                }
             }
         } else {
             alert('Speech recognition is not supported in your browser. Please try Chrome or Edge.');
@@ -229,7 +245,7 @@ const Home = () => {
                                 {isListening ? (
                                     // Stop microphone icon (filled red)
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"></path>
+                                        <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"></path>
                                         <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
                                         <line x1="12" y1="19" x2="12" y2="22"></line>
                                         <line x1="8" y1="22" x2="16" y2="22"></line>
